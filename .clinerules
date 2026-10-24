@@ -1,0 +1,62 @@
+# Cline Kuralları — appShorts (YouTube Shorts Generator)
+
+## plan.md — Projenin Beyni (Öncelikli)
+
+- **`plan.md`, bu projenin beynidir.** Her görevden ÖNCE `plan.md` okunur; mimari, teknik detaylar ve şema için tek doğruluk kaynağıdır.
+- Kodda yapısal bir değişiklik yapıldıysa (yeni servis, yeni akış, değişen dosya yapısı, değişen komutlar) `plan.md` AYNI güncellenir — plan.md asla kodun gerisinde kalmaz.
+- `plan.md` içindeki [colab.md](colab.md) bağlantısı Colab uzaktan çalıştırma detaylarını taşır; Colab ile ilgili değişikliklerde hem `colab.md` hem `plan.md` güncellenir.
+- Yeni bir görevde kapsam belirsizse önce `plan.md`'ye bak, sonra kodu incele.
+
+## Token Tasarrufu (Zorunlu)
+
+- **Gereksiz okuma yapma:** Bütün dosyaları baştan sona okuma; yalnızca ilgili aralığı (`start_line`/`end_line`) veya grep ile hedefle.
+- **Aynı dosyayı iki kez okuma.** Okunan bilgiyi tur içinde hatırla; tekrar okuma.
+- **Araç çağrılarını paralelleştir:** birbirinden bağımsız okuma/arama/komutları tek mesajda topla.
+- **Büyük/ikili dosyaları asla okuma:** `output/`, `*.mp4`, `*.mp3`, `.venv/`, `__pycache__/`, `.ipynb` (grep ile hedefle), `.env`.
+- **`search_codebase`/`grep` tercih et:** dosyayı tam okumak yerine önce arama ile konumu bul.
+- **Çıktıyı kırp:** shell çıktısında `head`/`tail`/`grep` kullan, uzun listeleme yapma; plan sunumlarını kısa ve madde madde tut.
+- **Tekrarlı işleri tek komutta topla** (bağımsız komutları tek `run_commands` çağrısında çalıştır).
+- Web araması/gönderisi yalnızca kodda çözülemeyen bilgi için yapılır; bilinen dokümantasyon aranmaz.
+
+## Python Ortamı (Zorunlu)
+
+- **Her zaman `.venv` kullan.** Sistem Python'u (`python`, `python3`) ve eski `venv/` dizini ASLA kullanılmaz (`venv/` silinmiştir, yeniden oluşturulmaz).
+- Çalıştırma: `.venv/bin/python <script.py>` — Paket: `uv pip install <paket>` (normal `pip` yok).
+- Import hatasında: `PYTHONPATH=/root/appShorts .venv/bin/python <script.py>`
+
+## Komutlar
+
+- Üretim: `.venv/bin/python generate_shorts.py "Konu başlığı"`
+- Colab: `.venv/bin/python generate_shorts.py "Konu" --colab --gpu T4` (detay: `colab.md`)
+- Test: `.venv/bin/python -m pytest tests/ -v` — Tek test: `.venv/bin/python -m pytest tests/test_config.py -v`
+
+## Mimari ve Kod Tarzı
+
+- **Katmanlar**: `generate_shorts.py` (CLI) → `pipeline/shorts_pipeline.py` (orkestrasyon, 5 adım) → `services/*` (iş mantığı) → `config.py` (ayarlar).
+- Tüm ayarlar `config.py`'e eklenir; ortam değişkenleri `.env` üzerinden `os.getenv` ile okunur, sabut kodlanmaz.
+- Tek sorumluluklu servis sınıfları (`SceneGenerator`, `VideoFetcher`, `VoiceGenerator`, `SubtitleSync`, `VideoAssembler`, `ColabRunner`); yeni pipeline adımı `ShortsPipeline.run()` içindeki `[n/5]` ile eklenir.
+- Veri taşıma `@dataclass` (ör. `Scene`) ile olur; tip hint zorunlu (`typing`, `Path`).
+- Docstring İngilizce; kullanıcıya `print` ve AI prompt'ları Türkçedir (prompt JSON'unda `{{...}` escape edilir).
+- MoviePy **2.x** API'si (`moviepy>=2.0.0`); v1 `set_*` metotları kullanılmaz.
+
+## Güvenlik
+
+- **`.env` asla okunmaz/yazılmaz/raporlanmaz.** Anahtarlara yalnızca `config.py` üzerinden erişilir (`GEMINI_API_KEY`, `PEXELS_API_KEY`).
+- API anahtarı koda/loga gömülmez; şablon `.env.example`'dır.
+
+## Çıktı Dosyaları
+
+- Videolar `output/`, geçiciler `output/tmp/{videos,audio}` içindedir — düzenlenmez/silinmez; `.clineignore` ile bağlamdan çıkarılır.
+- Üretilen video bitince `mkdir -p /sdcard/python` hedefine kopyalanır.
+- Kök dizindeki `shorts_*TEMP_MPY*.mp4` MoviePy artığıdır, dikkate alınmaz.
+
+## Test ve Doğrulama
+
+- Testler `tests/` altında `unittest.TestCase` + `unittest.mock`, `pytest` ile koşulur.
+- Değişiklikten sonra `.venv/bin/python -m pytest tests/ -v` çalıştırılır; yeni davranışa test eklenir, gerçek API çağrıları mock'lanır.
+
+## Yapılmayacaklar
+
+- `.venv/`, `output/`, `__pycache__/`, `.pytest_cache/` içine manuel dosya ekleme/düzenleme.
+- `requirements.txt` dışında bağımlılık ekleme yok (Colab CLI: `uv tool install google-colab-cli`).
+- `generate_shorts.ipynb` yalnızca Colab içindir; ana kaynak `generate_shorts.py` + `services/` + `pipeline/`dır.

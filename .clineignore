@@ -1,0 +1,30 @@
+# Gizli veriler
+.env
+
+# Sanal ortamlar
+.venv/
+venv/
+
+# Geçici dosyalar (görsel/ses/altyazı/moviepy temp)
+.tmp/
+
+# Üretilen çıktılar ve geçici dosyalar
+output/
+*.mp4
+*.mp3
+*.wav
+*.srt
+shorts_*TEMP_MPY*
+
+# Cache / derleme artıkları
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+.mypy_cache/
+.ruff_cache/
+
+# IDE / sistem
+.vscode/
+.idea/
+.DS_Store

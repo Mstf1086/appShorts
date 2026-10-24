@@ -1,0 +1,3 @@
+Noto Sans Bold — SIL Open Font License 1.1 (https://openfontlicense.org)
+Downloaded from https://github.com/googlefonts/noto-fonts
+Bundled so subtitles render on machines without system fonts.

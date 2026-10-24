@@ -1,0 +1,32 @@
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Generated media and temporary files
+output/
+.tmp/
+.gradio/
+*.mp4
+*.mp3
+*.wav
+*.TEMP_MPY*.mp4
+
+# Local agent/runtime logs
+res.json
+
+# OS/editor
+.DS_Store
+.idea/
+.vscode/
+*.swp
