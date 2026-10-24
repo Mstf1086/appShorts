@@ -194,8 +194,7 @@ class TestVoiceGenerator(unittest.TestCase):
 
     @patch('services.voice_generator.config')
     def test_generate_voiceover_inside_running_event_loop(self, mock_config):
-        """Colab/Jupyter scenario: generate_voiceover called while an event
-        loop is already running must NOT raise (asyncio.run RuntimeError)."""
+        """A running event loop must not cause an asyncio.run error."""
         import asyncio
 
         mock_config.VOICE_NAME = "tr-TR-TestNeural"
@@ -205,8 +204,8 @@ class TestVoiceGenerator(unittest.TestCase):
         generator = VoiceGenerator()
         results = {}
 
-        async def colab_cell():
-            # Sync call from inside a running loop, like a notebook cell
+        async def running_loop():
+            # Sync call from inside a running loop.
             with patch.object(generator, '_generate_single', new_callable=AsyncMock) as mock_gen:
                 mock_gen.return_value = "/tmp/test_audio_loop/scene_01.mp3"
                 os.makedirs("/tmp/test_audio_loop", exist_ok=True)
@@ -214,7 +213,7 @@ class TestVoiceGenerator(unittest.TestCase):
                     f.write(b"fake audio data")
                 results["result"] = generator.generate_voiceover(self.test_scene)
 
-        asyncio.run(colab_cell())  # emulates ipykernel's live loop
+        asyncio.run(running_loop())
 
         self.assertEqual(results["result"], "/tmp/test_audio_loop/scene_01.mp3")
         Path("/tmp/test_audio_loop/scene_01.mp3").unlink()

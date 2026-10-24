@@ -11,9 +11,9 @@ from services.scene_generator import Scene
 def _run_coro(coro):
     """Run a coroutine from sync code, even inside a running event loop.
 
-    Jupyter/Colab (ipykernel) keeps a live event loop, where asyncio.run()
+    Some embedded runtimes keep a live event loop, where asyncio.run()
     raises RuntimeError. In that case the coroutine is executed on a fresh
-    loop in a worker thread instead. Outside a loop (plain CLI) the standard
+    loop in a worker thread instead. Outside a loop the standard
     asyncio.run() path is used unchanged.
     """
     try:

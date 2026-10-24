@@ -4,12 +4,9 @@ YouTube Shorts Generator - CLI Entry Point
 
 Usage:
     python generate_shorts.py "Your topic here"
-    python generate_shorts.py "Your topic here" --colab
-    python generate_shorts.py "Your topic here" --colab --gpu T4
 
 Example:
     python generate_shorts.py "Yapay zeka nedir?"
-    python generate_shorts.py "Yapay zeka nedir?" --colab --gpu A100
 """
 
 import sys
@@ -34,50 +31,12 @@ def parse_args():
         epilog="""
 Examples:
   python generate_shorts.py "Yapay zeka nedir?"
-  python generate_shorts.py "Yapay zeka nedir?" --colab
-  python generate_shorts.py "Yapay zeka nedir?" --colab --gpu T4
-  python generate_shorts.py "Yapay zeka nedir?" --colab --gpu A100 --session my-session
-
-Colab CLI:
-  Run the pipeline on a remote Google Colab VM with GPU/TPU acceleration.
-  Install Colab CLI first: uv tool install google-colab-cli
-
-Supported GPUs: T4, L4, G4, H100, A100
-Supported TPUs: v5e1, v6e1
         """
     )
     parser.add_argument(
         "topic",
         nargs="?",
         help="Topic/title for the YouTube Shorts video"
-    )
-    parser.add_argument(
-        "--colab",
-        action="store_true",
-        help="Run the pipeline on a remote Google Colab VM"
-    )
-    parser.add_argument(
-        "--gpu",
-        type=str,
-        default=None,
-        help="GPU type for Colab VM (T4, L4, G4, H100, A100)"
-    )
-    parser.add_argument(
-        "--tpu",
-        type=str,
-        default=None,
-        help="TPU type for Colab VM (v5e1, v6e1)"
-    )
-    parser.add_argument(
-        "--session",
-        type=str,
-        default=None,
-        help="Colab session name (default: shorts-gen)"
-    )
-    parser.add_argument(
-        "--high-mem",
-        action="store_true",
-        help="Request high-memory machine shape for Colab VM"
     )
     parser.add_argument(
         "--no-approve",
@@ -147,7 +106,6 @@ def main():
         print("\nUsage: python generate_shorts.py <topic> [options]")
         print("\nExample:")
         print('  python generate_shorts.py "Yapay zeka nedir?"')
-        print('  python generate_shorts.py "Yapay zeka nedir?" --colab --gpu T4')
         print("\nMake sure to set your API keys in .env file:")
         print("  - GEMINI_API_KEY")
         print("\nRun with --help for more options.")
@@ -180,38 +138,14 @@ def main():
 
     # Run the pipeline
     try:
-        if args.colab:
-            # Remote execution via Google Colab CLI
-            from services.colab_runner import ColabRunner
+        pipeline = ShortsPipeline()
+        output_path = pipeline.run(topic, interactive=interactive)
 
-            session_name = args.session or config.COLAB_SESSION_NAME
-            gpu = args.gpu or config.COLAB_GPU or None
-            tpu = args.tpu or config.COLAB_TPU or None
-            high_mem = args.high_mem or config.COLAB_HIGH_MEM
-
-            runner = ColabRunner(
-                session_name=session_name,
-                gpu=gpu,
-                tpu=tpu,
-                high_mem=high_mem,
-            )
-            output_path = runner.run_full_pipeline(topic)
-
-            if output_path and Path(output_path).exists():
-                print(f"\n✓ Video successfully created: {output_path}")
-            else:
-                print("\n✗ Video generation failed - no output file created")
-                sys.exit(1)
+        if output_path and Path(output_path).exists():
+            print(f"\n✓ Video successfully created: {output_path}")
         else:
-            # Local execution
-            pipeline = ShortsPipeline()
-            output_path = pipeline.run(topic, interactive=interactive)
-
-            if output_path and Path(output_path).exists():
-                print(f"\n✓ Video successfully created: {output_path}")
-            else:
-                print("\n✗ Video generation failed - no output file created")
-                sys.exit(1)
+            print("\n✗ Video generation failed - no output file created")
+            sys.exit(1)
 
     except KeyboardInterrupt:
         print("\n\nGeneration cancelled by user.")

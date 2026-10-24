@@ -85,8 +85,8 @@ def _resolve_subtitle_font() -> str:
     """Resolve a font file that actually exists in the current environment.
 
     Priority: SUBTITLE_FONT env override -> known system paths -> matplotlib's
-    bundled DejaVuSans-Bold (always present when matplotlib is installed,
-    e.g. on Colab) -> first font matplotlib can find -> bundled repo font.
+    bundled DejaVuSans-Bold (always present when matplotlib is installed) ->
+    first font matplotlib can find -> bundled repo font.
     Returns "" when nothing is found (callers fall back to Pillow's default
     font); never returns a path that does not exist.
     """
@@ -196,13 +196,6 @@ CLOUDFLARE_CLI_TIMEOUT = int(os.getenv("CLOUDFLARE_CLI_TIMEOUT", "120"))
 # Workers AI text model used for keyless scene generation
 CLOUDFLARE_TEXT_MODEL = os.getenv(
     "CLOUDFLARE_TEXT_MODEL", "@cf/meta/llama-3.2-3b-instruct")
-
-# Google Colab CLI settings
-COLAB_ENABLED = os.getenv("COLAB_ENABLED", "false").lower() == "true"
-COLAB_GPU = os.getenv("COLAB_GPU", "")  # e.g., T4, L4, G4, H100, A100
-COLAB_TPU = os.getenv("COLAB_TPU", "")  # e.g., v5e1, v6e1
-COLAB_SESSION_NAME = os.getenv("COLAB_SESSION_NAME", "shorts-gen")
-COLAB_HIGH_MEM = os.getenv("COLAB_HIGH_MEM", "false").lower() == "true"
 
 # Gradio web UI settings (webui.py)
 # Host "0.0.0.0" -> erişilebilir tüm arayüzlere dinler (dışarıdan erişim).

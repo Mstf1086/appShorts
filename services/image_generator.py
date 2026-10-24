@@ -35,7 +35,7 @@ class ImageGenerator:
 
     Approval loop (interactive mode): Enter=approve, d=change (next candidate /
     regenerate batch), s=skip scene (black background), q=cancel the whole run.
-    When stdin is not a TTY (Colab/CI/remote) the first candidate is auto-approved.
+    When stdin is not a TTY (CI/remote), the first candidate is auto-approved.
     """
 
     def __init__(self, api_key: str = None, model: str = None,

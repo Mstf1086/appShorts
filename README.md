@@ -12,7 +12,6 @@ Python kullanarak YouTube Shorts formatında (dikey, 9:16) videolar otomatik ola
 - **Süre Kontrolü**: 40-60 saniye arasında video üretimi
 - **Web Arayüzü (Gradio)**: Tarayıcıdan konu girip video üretme — canlı log, video önizleme, dışarıdan erişim (public link)
 - **Workers AI Model Seçimi**: Web UI'da üç tekil dropdown ile Free uyumlu Text Generation, Text-to-Speech ve Text-to-Image modelleri arasından seçim; seçilen model aile bazlı payload adaptörleriyle Workers AI'ya gönderilir
-- **Google Colab CLI**: Bulut tabanlı GPU/TPU ile uzaktan çalıştırma desteği
 
 ## Kurulum
 
@@ -28,14 +27,6 @@ source .venv/bin/activate  # Linux/Mac
 
 ```bash
 uv pip install -r requirements.txt
-```
-
-### 3. Google Colab CLI (İsteğe Bağlı)
-
-Uzaktan GPU/TPU ile çalıştırmak için:
-
-```bash
-uv tool install google-colab-cli
 ```
 
 ### 3. Cloudflare Girişi (API Anahtarı Olmadan)
@@ -112,69 +103,6 @@ GRADIO_AUTH_PASS=guclu-parola
 
 > Not: Web arayüzünde görsel **onay akışı yoktur** (terminaldeki Enter/d/s/q akışı web'e uygun değil); görseller otomatik onaylanır.
 
-### Google Colab CLI ile Uzaktan Çalıştırma
-
-YouTube Shorts pipeline'ını Google Colab'ın bulut tabanlı GPU/TPU kaynaklarında çalıştırın.
-
-#### Colab CLI Kurulumu
-
-```bash
-uv tool install google-colab-cli
-```
-
-#### Kullanım
-
-```bash
-# CPU ile çalıştır
-.venv/bin/python generate_shorts.py "Konu başlığı" --colab
-
-# T4 GPU ile çalıştır
-.venv/bin/python generate_shorts.py "Konu başlığı" --colab --gpu T4
-
-# A100 GPU ile çalıştır
-.venv/bin/python generate_shorts.py "Konu başlığı" --colab --gpu A100
-
-# Özel session adı ve yüksek bellek ile
-.venv/bin/python generate_shorts.py "Konu başlığı" --colab --gpu L4 --session my-session --high-mem
-```
-
-#### Desteklenen GPU'lar
-
-| GPU | Açıklama |
-|-----|----------|
-| T4 | Entry-level GPU, ücretsiz/Pro plan |
-| L4 | Orta seviye GPU, Pro+ plan |
-| G4 | Yüksek performans GPU |
-| H100 | Üst seviye GPU |
-| A100 | Profesyonel GPU, Pro+ plan |
-
-#### Desteklenen TPU'lar
-
-| TPU | Açıklama |
-|-----|----------|
-| v5e1 | TPU v5e (1 chiplet) |
-| v6e1 | TPU v6e (1 chiplet) |
-
-#### Çevre Değişkenleri ile Yapılandırma
-
-`.env` dosyasına Colab ayarları ekleyebilirsiniz:
-
-```
-COLAB_ENABLED=true
-COLAB_GPU=T4
-COLAB_SESSION_NAME=shorts-gen
-COLAB_HIGH_MEM=false
-```
-
-#### Nasıl Çalışır
-
-1. `colab new` — Uzaktan Colab VM oluşturulur
-2. `colab install` — Bağımlılıklar VM'ye kurulur
-3. `colab upload` — Proje dosyaları VM'ye yüklenir
-4. `colab exec` — Shorts pipeline'ı VM'de çalıştırılır
-5. `colab download` — Üretilen video yerel makineye indirilir
-6. `colab stop` — VM serbest bırakılır
-
 ## Proje Yapısı
 
 ```
@@ -192,8 +120,7 @@ appShorts/
 │   ├── cloudflare_tts.py   # Cloudflare Workers AI seslendirme
 │   ├── voice_generator.py  # Edge TTS seslendirme
 │   ├── subtitle_sync.py    # Altyazı zamanlama (kelime sınırları + crossfade zaman çizelgesi)
-│   ├── video_assembler.py  # MoviePy ile montaj
-│   └── colab_runner.py     # Google Colab CLI entegrasyonu
+│   └── video_assembler.py  # MoviePy ile montaj
 ├── pipeline/
 │   └── shorts_pipeline.py  # Ana iş akışı
 ├── output/                 # Üretilen videolar (shorts_TIMESTAMP.mp4)
@@ -209,7 +136,6 @@ appShorts/
 - **Görsel sağlayıcı zinciri**: Cloudflare Workers AI → (401/403 olursa) Pollinations.ai (anahtarsız) → Gemini → prosedürel gradient. Token geçersizse zincir durmaz, sahneler yine gerçek görselle üretilir
 - **AI Model**: Gemini (gemini-3.5-flash-lite)
 - **Cloudflare Workers AI**: Varsayılan **`cf` CLI OAuth oturumu** (`--cf-login`) API anahtarı gerektirmez; CLI profili senaryo metni, görsel ve TTS çağrılarında kullanılır. Aktif modeller: `@cf/meta/llama-3.2-3b-instruct` (metin), `@cf/black-forest-labs/flux-1-schnell` (görsel, `steps=4`), `@cf/myshell-ai/melotts` (WAV ses; Türkçe desteklemez). `CLOUDFLARE_ACCOUNT_ID`/`CLOUDFLARE_API_TOKEN` REST yolu geriye dönük alternatiftir. **Boş resim kontrolü**: her görsel çözülüp 32x32 grayscale std ile ölçülür; solid/boş/kirli veri reddedilir ve 1 kez taze seed ile yeniden denenir. Token/OAuth yoksa → Pollinations/Gemini fallback → prosedürel gradient. `IMAGE_PROVIDER=gemini` ile eski zincir: Gemini failover → kota dolunca Cloudflare → Pollinations.ai → gradient. Sahne başına N aday + terminal onay akışı (Enter=onayla, d=değiştir, s=atla, q=iptal; TTY'siz otomatik)
-- **Colab CLI**: Uzaktan GPU/TPU desteği (T4, L4, G4, H100, A100)
 
 ## API Limitleri
 
