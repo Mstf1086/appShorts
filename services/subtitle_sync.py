@@ -170,11 +170,14 @@ class SubtitleSync:
             else:
                 # Fallback: distribute the speech duration over the lines.
                 lines = self.split_text(scene.text)
-                time_per_line = speech / max(len(lines), 1)
-
-                for i, line in enumerate(lines):
-                    start = scene_start + (i * time_per_line)
-                    end = start + time_per_line
+                weights = [max(len(line), 1) for line in lines]
+                total_weight = sum(weights) or 1
+                cursor_time = 0.0
+                for line, weight in zip(lines, weights):
+                    time_for_line = speech * (weight / total_weight)
+                    start = scene_start + cursor_time
+                    end = start + time_for_line
+                    cursor_time += time_for_line
 
                     subtitles.append({
                         "index": len(subtitles) + 1,
