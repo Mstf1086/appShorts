@@ -12,10 +12,10 @@ YouTube Shorts formatında (dikey 9:16, 1080x1920, 40-60 sn) videolar otomatik �
 | Paket yöneticisi | `uv` (`uv pip install -r requirements.txt`) |
 | AI Model | Gemini `gemini-3.5-flash-lite` (`google-genai`) veya anahtarsız Workers AI (`@cf/meta/llama-3.2-3b-instruct`, `cf` CLI OAuth) |
 | Sahne Görselleri | Workers AI Flux 1 Schnell (`cf` CLI OAuth) veya Gemini görsel modeli (`GEMINI_IMAGE_MODEL`, default `gemini-2.5-flash-image`) + onay/değiştir akışı |
-| Seslendirme | Edge TTS `tr-TR-AhmetNeural` |
+| Seslendirme | Edge TTS `tr-TR-AhmetNeural` (veya Pocket TTS offline) |
 | Montaj | MoviePy **2.x** + FFmpeg |
 | Çıktı | 1080x1920 MP4, 40-60 sn |
-| Test | `unittest` + `unittest.mock`, `pytest` ile (174 test, 11 dosya) |
+| Test | `unittest` + `unittest.mock`, `pytest` ile (190 test, 12 dosya) |
 | CLI | `argparse` — `generate_shorts.py` |
 | Web UI | Gradio 6 — `webui.py` (`0.0.0.0` bind + `*.gradio.live` public link) |
 
@@ -58,7 +58,8 @@ Katmanlar: **CLI** → **Pipeline (orkestrasyon)** → **Services (iş mantığ�
 │   ├── image_generator.py  # ImageGenerator (Cloudflare CLI/REST/Gemini görsel + onay akışı)
 │   ├── voice_generator.py  # VoiceGenerator (edge/ttsai, kelime zamanlaması, süre hesabı)
 │   ├── cloudflare_tts.py   # CloudflareTTS (Workers AI CLI/REST, base64 ses decode)
-│   ├── audio_factory.py    # get_voice_generator() — TTS motoru fabrikası (edge/cloudflare/ttsai)
+│   ├── audio_factory.py    # get_voice_generator() — TTS motoru fabrikası (edge/cloudflare/ttsai/pockettts)
+│   ├── pocket_tts.py       # PocketTTS (offline Türkçe, CPU-friendly, 6 ses + ses klonlama)
 │   ├── subtitle_sync.py    # SubtitleSync (SRT üretimi, satır bölme, format_time)
 │   ├── video_assembler.py  # VideoAssembler (resize, altyazı overlay, montaj)
 ├── pipeline/
