@@ -5,3 +5,11 @@ gradio>=6.0.0
 python-dotenv>=1.0.0
 requests>=2.31.0
 decorator>=5.1.0,<6.0.0
+
+# Offline Turkish TTS (TTS_PROVIDER=pockettts): CPU-friendly, 6 voices,
+# emotion tags and voice cloning (model: wite-tech/pocket-tts-turkish, CC-BY-4.0).
+# It pulls PyTorch; on machines without an NVIDIA GPU install the small CPU build
+# first, otherwise pip resolves the ~1.5 GB CUDA build on Linux:
+#   uv pip install torch --index-url https://download.pytorch.org/whl/cpu
+#   uv pip install -r requirements.txt
+pocket-tts-turkish>=0.1.0

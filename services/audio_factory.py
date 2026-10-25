@@ -1,9 +1,9 @@
 """Factory for voice generation services.
 
-At program startup the user is asked which TTS engine to use (edge-tts or
-Cloudflare Workers AI). The choice is stored in `config.TTS_PROVIDER` and the
-corresponding service is returned here. This keeps pipeline code agnostic of
-the actual TTS backend.
+At program startup the user is asked which TTS engine to use (edge-tts, Cloudflare
+Workers AI, tts.ai or the offline Pocket TTS Turkish). The choice is stored in
+`config.TTS_PROVIDER` and the corresponding service is returned here. This keeps
+pipeline code agnostic of the actual TTS backend.
 """
 from services.cloudflare_tts import CloudflareTTS
 from services.voice_generator import VoiceGenerator
@@ -18,10 +18,18 @@ def get_voice_generator(service: str = None, voice_name: str = None,
     interactive prompt (TTY only, once per run).
 
     Supported providers: "edge" (edge-tts), "cloudflare" (Workers AI),
-    "ttsai" (tts.ai).
+    "ttsai" (tts.ai), "pockettts" (offline Pocket TTS Turkish — the engine is
+    loaded lazily on first synthesis, so a missing optional dependency only
+    fails when that provider is actually used).
     """
     provider = service or config.TTS_PROVIDER
     provider = (provider or "").lower().strip()
+
+    if provider == "pockettts":
+        # Imported here (not at module import) to keep the optional
+        # pocket-tts-turkish dependency out of the default edge-tts path.
+        from services.pocket_tts import PocketTTS
+        return PocketTTS()
 
     if provider == "cloudflare":
         return CloudflareTTS(

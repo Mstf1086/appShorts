@@ -52,7 +52,7 @@ Examples:
         "--tts",
         type=str,
         default=None,
-        help="Voice TTS engine to use (edge / cloudflare); prompts on startup if omitted"
+        help="Voice TTS engine to use (edge / cloudflare / ttsai / pockettts); prompts on startup if omitted"
     )
     return parser.parse_args()
 
@@ -69,12 +69,13 @@ def _choose_tts_engine(service: str = None) -> str:
     print("  [1] edge-tts    - free, best quality, needs network to services.google.com")
     print("  [2] cloudflare  - Workers AI Melotts, 'cf' OAuth girişi (Türkçe desteklemez)")
     print("  [3] ttsai       - tts.ai quality voices, 15k free chars/day, needs TTS_AI_API_KEY (get one free at tts.ai)")
-    print("  [4] skip        - use default (edge-tts) for this run")
+    print("  [4] pockettts   - çevrimdışı Türkçe Pocket TTS (CPU), 6 ses + duygu + klonlama")
+    print("  [5] skip        - use default (edge-tts) for this run")
     try:
-        choice = input("  Enter 1-4 (default 1): ").strip().lower()
+        choice = input("  Enter 1-5 (default 1): ").strip().lower()
     except (EOFError, KeyboardInterrupt):
         return "edge"
-    mapping = {"1": "edge", "2": "cloudflare", "3": "ttsai"}
+    mapping = {"1": "edge", "2": "cloudflare", "3": "ttsai", "4": "pockettts"}
     return mapping.get(choice, "edge")
 
 

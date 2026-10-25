@@ -207,7 +207,7 @@ def build_ui() -> gr.Blocks:
                 scale=3,
             )
             tts = gr.Dropdown(
-                choices=["edge", "cloudflare", "ttsai"],
+                choices=["edge", "cloudflare", "ttsai", "pockettts"],
                 value=config.TTS_PROVIDER,
                 label="Ses motoru",
                 scale=1,

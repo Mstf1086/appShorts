@@ -47,7 +47,10 @@ VOICE_NAME = "tr-TR-AhmetNeural"  # Male Turkish voice
 #     Turkish is unsupported by this model
 #   "ttsai"   - tts.ai, better voice quality, free tier (15k chars/day) needs
 #     TTS_AI_API_KEY; no word timings -> classic caption path
-TTS_PROVIDER = os.getenv("TTS_PROVIDER", "edge")  # "edge" | "cloudflare" | "ttsai"
+#   "pockettts" - offline Türkçe Pocket TTS (pocket-tts-turkish, CPU-friendly)
+#     6 ses + 5 duygu etiketi + kısa kayıttan ses klonlama; model indirmesi
+#     dışında ağ gerekmez, kelime zamanlaması yok -> klasik altyazı yolu
+TTS_PROVIDER = os.getenv("TTS_PROVIDER", "edge")  # "edge" | "cloudflare" | "ttsai" | "pockettts"
 # Edge TTS 403/throttle backoff: rapid sequential WSS connects get rate-limited
 TTS_MAX_RETRIES = int(os.getenv("TTS_MAX_RETRIES", "5"))
 TTS_RETRY_BASE_DELAY = float(os.getenv("TTS_RATE_LIMIT_BASE_DELAY", "3.0"))  # s, exponential: base * 2**attempt
@@ -62,6 +65,16 @@ CLOUDFLARE_TTS_MODEL = os.getenv(
     "CLOUDFLARE_TTS_MODEL", "@cf/myshell-ai/melotts")
 CLOUDFLARE_TTS_LANGUAGE = os.getenv("CLOUDFLARE_TTS_LANGUAGE", "en")
 CLOUDFLARE_TTS_TIMEOUT = int(os.getenv("CLOUDFLARE_TTS_TIMEOUT", "120"))
+
+# Pocket TTS Turkish — offline Türkçe seslendirme (pocket-tts-turkish, CC-BY-4.0)
+# İlk çalıştırmada ~440 MB model indirilir, sonrası tamamen çevrimdışıdır.
+# Kelime zamanı üretilmediği için klasik (karakter-oranlı) altyazı yolu kullanılır.
+POCKET_TTS_VOICE = os.getenv("POCKET_TTS_VOICE", "female_1")  # female_1..3 | male_1..3
+POCKET_TTS_EMOTION = os.getenv("POCKET_TTS_EMOTION", "")  # boş = nötr; bilinmeyen değer uyarı verip nötre döner
+POCKET_TTS_DEVICE = os.getenv("POCKET_TTS_DEVICE", "")  # boş = auto (GPU varsa GPU); "cpu" | "cuda"
+POCKET_TTS_MODEL = os.getenv("POCKET_TTS_MODEL", "")  # HF repo override (varsayılan: wite-tech/pocket-tts-turkish)
+POCKET_TTS_VOICE_CLONE = os.getenv("POCKET_TTS_VOICE_CLONE", "")  # 5-10 sn referans kayıt (klonlama)
+POCKET_TTS_SEED = os.getenv("POCKET_TTS_SEED", "")  # tamsayı -> aynı metin + tohum = aynı ses
 
 # Subtitle settings - TikTok style (bottom, scroll-up animation)
 _SUBTITLE_FONT_CANDIDATES = (

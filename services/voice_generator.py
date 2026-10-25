@@ -109,6 +109,8 @@ class VoiceGenerator:
           edge   -> Edge TTS (returns per-word timings for karaoke captions)
           ttsai  -> tts.ai quality voice (classic captions)
           cloudflare -> Cloudflare Workers AI (classic captions)
+          pockettts -> offline Pocket TTS Turkish, delegated to PocketTTS
+            (classic captions; local engine owns its own retry loop)
 
         Edge TTS intermittently returns HTTP 403 (rate-limit/throttle) on the
         WSS connect when scenes are synthesized back-to-back. Retries use
@@ -127,6 +129,13 @@ class VoiceGenerator:
         output_path = str(self.output_dir / filename)
 
         provider = getattr(config, "TTS_PROVIDER", "edge").lower().strip()
+
+        if provider == "pockettts":
+            # Offline Turkish engine (pocket-tts-turkish): PocketTTS owns its own
+            # retry loop and writes ``scene_XX.wav``. No word timings are produced,
+            # so the classic (character-proportional) caption path is used.
+            from services.pocket_tts import PocketTTS
+            return PocketTTS().generate_voiceover(scene, max_retries=max_retries)
 
         if provider == "cloudflare":
             # Delegate to the CloudflareTTS service class for the actual call.
@@ -187,6 +196,8 @@ class VoiceGenerator:
                 "edge": ("TTS needs no key", "network access to services.google.com"),
                 "ttsai": ("set TTS_AI_API_KEY (free 15k chars/day at tts.ai)", "tts.ai API"),
                 "cloudflare": ("CLOUDFLARE_ACCOUNT_ID + CLOUDFLARE_API_TOKEN", "Cloudflare Workers AI"),
+                "pockettts": ("'uv pip install pocket-tts-turkish' (ilk koşuda ~440 MB model indirir)",
+                              "offline Pocket TTS Turkish"),
             }.get(provider, ("", ""))
             msg = f"  Hints: {' and '.join(h for h in hints if h)}; try again."
             print(msg)
